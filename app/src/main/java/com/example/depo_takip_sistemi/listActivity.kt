@@ -119,7 +119,7 @@ fun ListScreen() {
     } else {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(urunler) { urun ->
-                val stokBilgi=stokBilgileri["${urun.urun_ad}+${urun.marka}+${urun.model}"]
+               val stokBilgi=stokBilgileri["${urun.urun_ad}+${urun.marka}+${urun.model}"]
                 val kullanimBilgi = kullanimBilgileri[urun.urun_ID]
                 var expanded by remember { mutableStateOf(false) }
 

@@ -40,25 +40,20 @@ class AddActivity : ComponentActivity() {
             Depo_takip_sistemiTheme {
                 val context = LocalContext.current
                 AddScreen(context)
-
             }
         }
     }
 }
 
-
 @Composable
 fun AddScreen(context: Context) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var _ad by remember { mutableStateOf("") }
     var _Raf by remember { mutableStateOf("") }
     var _urunSapNo by remember { mutableStateOf("") }
     var _marka by remember { mutableStateOf("") }
-    var _bitmap: Bitmap? by remember { mutableStateOf(null) }
     var _model by remember { mutableStateOf("") }
-
-
+    var _bitmap: Bitmap? by remember { mutableStateOf(null) }
 
     Column(
         modifier = Modifier
@@ -74,16 +69,15 @@ fun AddScreen(context: Context) {
         OutlinedTextField(
             value = _marka,
             onValueChange = { _marka = it },
-            label = { Text("marka") },
+            label = { Text("Marka") },
             modifier = Modifier.fillMaxWidth()
         )
         OutlinedTextField(
             value = _model,
             onValueChange = { _model = it },
-            label = { Text("model") },
+            label = { Text("Model") },
             modifier = Modifier.fillMaxWidth()
         )
-
         OutlinedTextField(
             value = _Raf,
             onValueChange = { _Raf = it },
@@ -98,22 +92,19 @@ fun AddScreen(context: Context) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            try {
-                scope.launch {
-                    val ürünId = UUID.randomUUID().toString()
-                    val ürün = Urun(
-                        urun_ad = _ad,
-                        urun_ID = ürünId,
-                        eklenme_tarihi = Timestamp.now(),
-                        kullanim_durumu = "depoda",
-                        marka = _marka,
-                        model = _model,
-                        raf = _Raf,
-                        sap_no = _urunSapNo,
-
-
-                        )
-
+            scope.launch {
+                val ürünId = UUID.randomUUID().toString()
+                val ürün = Urun(
+                    urun_ad = _ad,
+                    urun_ID = ürünId,
+                    eklenme_tarihi = Timestamp.now(),
+                    kullanim_durumu = "depoda",
+                    marka = _marka,
+                    model = _model,
+                    raf = _Raf,
+                    sap_no = _urunSapNo
+                )
+                try {
                     urunnEkle(ürün, context)
                     _bitmap = Qr_generate().generateQRCode(ürünId)
                     QR_print().printBitmap(context, _bitmap!!)
@@ -121,18 +112,12 @@ fun AddScreen(context: Context) {
                     stokGuncellemeVeyaEkleme(
                         ürün_adı = _ad, marka = _marka, model = _model, eklemeAdeti = 1, context
                     )
-
-
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Ürün eklenemedi: ${e.message}", Toast.LENGTH_LONG).show()
                 }
-
-
-            } catch (e: Exception) {
-                Toast.makeText(context, "ürün eklenemedi:${e.message}", Toast.LENGTH_LONG).show()
-
             }
-
         }) {
-            Text(" Ekle", fontSize = 20.sp)
+            Text("Ekle", fontSize = 20.sp)
         }
     }
 }
@@ -142,7 +127,7 @@ suspend fun stokGuncellemeVeyaEkleme(
     marka: String,
     model: String,
     eklemeAdeti: Int,
-    context: Context,
+    context: Context
 ) {
     val db = FirebaseFirestore.getInstance()
     val ürünStokCollection = db.collection("Urun_stok")
@@ -151,11 +136,9 @@ suspend fun stokGuncellemeVeyaEkleme(
     try {
         val docRef = ürünStokCollection.document(ürünId)
         val docSnapshot = docRef.get().await()
-
         if (docSnapshot.exists()) {
             val mevcutStok = docSnapshot.toObject(Urun_stok::class.java)
             val yeniAdet = (mevcutStok?.depo_adet ?: 0) + eklemeAdeti
-
             docRef.update("depo_adet", yeniAdet).addOnSuccessListener {
                 Toast.makeText(context, "Stok durumu başarıyla güncellendi.", Toast.LENGTH_LONG).show()
             }.addOnFailureListener { e ->
@@ -170,9 +153,9 @@ suspend fun stokGuncellemeVeyaEkleme(
                 depo_adet = eklemeAdeti
             )
             docRef.set(yeniÜrün).addOnSuccessListener {
-                Toast.makeText(context, "Yeni ürün başarıyla eklendi.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Yeni stok başarıyla eklendi.", Toast.LENGTH_LONG).show()
             }.addOnFailureListener { e ->
-                Toast.makeText(context, "Yeni ürün ekleme sırasında hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Stok ekleme sırasında hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     } catch (e: Exception) {
@@ -182,20 +165,16 @@ suspend fun stokGuncellemeVeyaEkleme(
 
 fun urunnEkle(urun: Urun, context: Context) {
     val db = FirebaseFirestore.getInstance()
-    // "Ürün" koleksiyonuna referans al
     val ürünCollection = db.collection("Urun")
-    // Ürünü Firestore'a ekle
     try {
-        // Ürünü "Ürün" koleksiyonuna ekleyin
         urun.urun_ID?.let {
-            ürünCollection.document(it).set(urun)
+            ürünCollection.document(it).set(urun).addOnSuccessListener {
+                Toast.makeText(context, "Ürün başarıyla eklendi.", Toast.LENGTH_LONG).show()
+            }.addOnFailureListener { e ->
+                Toast.makeText(context, "Ürün ekleme sırasında hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
     } catch (e: Exception) {
-        Toast.makeText(
-            context, "Ürün ekleme sırasında hata oluştu: ${e.message}", Toast.LENGTH_LONG
-        ).show()
+        Toast.makeText(context, "Ürün ekleme sırasında hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
     }
 }
-
-
-

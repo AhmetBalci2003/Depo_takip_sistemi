@@ -78,16 +78,17 @@ fun UrunAl(input: String) {
                     if (veri != null) {
                         if (veri.urun_ID != null) {
                             val urunkullanim = Urun_kullanim(
+
                                 UrunID = veri.urun_ID,
                                 kul_ad = kullaniciAdi,
                                 kul_dep = kullaniciDept,
                                 kul_soyad = kullaniciSoyadi,
                                 kul_sicil_no = kullaniciSicilNo,
                                 verilme_trh = Timestamp.now(),
-                                teslim_trh = null
+
                             )
 
-                            urunkullanimcollection.add(urunkullanim).await()
+                            urunkullanimcollection.document().set(urunkullanim).await()
                             urunCollection.document(veri.urun_ID)
                                 .update("kullanim_durumu", "kullanımda").await()
                         }

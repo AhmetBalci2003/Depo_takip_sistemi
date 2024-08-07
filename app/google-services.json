@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "265538185040",
+    "project_id": "depo-takip-sistemi-49689",
+    "storage_bucket": "depo-takip-sistemi-49689.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265538185040:android:dffac101e1d7cae261ae55",
+        "android_client_info": {
+          "package_name": "com.example.depo_takip_sistemi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFCbNt-SWDAHM2zChA7XFvwU1Aqmrr_JM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,4 +4,5 @@
     <string name="title_activity_list">listActivity</string>
     <string name="title_activity_urun_al">UrunAlActivity</string>
     <string name="title_activity_urun_teslim">Urun_teslimActivity</string>
+    <string name="title_activity_urun_detay">UrunDetayActivity</string>
 </resources>

@@ -7,22 +7,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.depo_takip_sistemi.ui.theme.Depo_takip_sistemiTheme
@@ -38,13 +30,21 @@ class AddActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Depo_takip_sistemiTheme {
-                val context = LocalContext.current
-                AddScreen(context)
+                // Ekranı ortalamak için padding ekleyelim
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val context = LocalContext.current
+                    AddScreen(context)
+                }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddScreen(context: Context) {
     val scope = rememberCoroutineScope()
@@ -55,69 +55,105 @@ fun AddScreen(context: Context) {
     var _model by remember { mutableStateOf("") }
     var _bitmap: Bitmap? by remember { mutableStateOf(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        OutlinedTextField(
-            value = _ad,
-            onValueChange = { _ad = it },
-            label = { Text("İsim") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = _marka,
-            onValueChange = { _marka = it },
-            label = { Text("Marka") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = _model,
-            onValueChange = { _model = it },
-            label = { Text("Model") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = _Raf,
-            onValueChange = { _Raf = it },
-            label = { Text("Raf") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = _urunSapNo,
-            onValueChange = { _urunSapNo = it },
-            label = { Text("Ürün SAP No") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            scope.launch {
-                val ürünId = UUID.randomUUID().toString()
-                val ürün = Urun(
-                    urun_ad = _ad,
-                    urun_ID = ürünId,
-                    eklenme_tarihi = Timestamp.now(),
-                    kullanim_durumu = "depoda",
-                    marka = _marka,
-                    model = _model,
-                    raf = _Raf,
-                    sap_no = _urunSapNo
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row {
+                        Icon(painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Ürün Ekle", style = MaterialTheme.typography.titleLarge)
+                    }
+                },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = Color(0xFFB0BEC5)
                 )
-                try {
-                    urunnEkle(ürün, context)
-                    _bitmap = Qr_generate().generateQRCode(ürünId)
-                    QR_print().printBitmap(context, _bitmap!!)
+            )
+        },
+        containerColor = Color(0xFFF0F4F8) // Soluk gri-mavi arka plan rengi
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            OutlinedTextField(
+                value = _ad,
+                onValueChange = { _ad = it },
+                label = { Text("Ürün ismi") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = _marka,
+                onValueChange = { _marka = it },
+                label = { Text("Marka") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = _model,
+                onValueChange = { _model = it },
+                label = { Text("Model") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = _Raf,
+                onValueChange = { _Raf = it },
+                label = { Text("Raf") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = _urunSapNo,
+                onValueChange = { _urunSapNo = it },
+                label = { Text("Ürün SAP No") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                    stokGuncellemeVeyaEkleme(
-                        ürün_adı = _ad, marka = _marka, model = _model, eklemeAdeti = 1, context
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Ürün eklenemedi: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        val ürünId = UUID.randomUUID().toString()
+                        val ürün = Urun(
+                            urun_ad = _ad,
+                            urun_ID = ürünId,
+                            eklenme_tarihi = Timestamp.now(),
+                            kullanim_durumu = "depoda",
+                            marka = _marka,
+                            model = _model,
+                            raf = _Raf,
+                            sap_no = _urunSapNo
+                        )
+                        try {
+                            urunnEkle(ürün, context)
+                            _bitmap = Qr_generate().generateQRCode(ürünId)
+                            QR_print().printBitmap(context, _bitmap!!)
+
+                            stokGuncellemeVeyaEkleme(
+                                ürün_adı = _ad, marka = _marka, model = _model, eklemeAdeti = 1, context
+                            )
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Ürün eklenemedi: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(8.dp), // Orta yuvarlak köşeler
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFC0CED9), // Soluk pastel mavi
+                    contentColor = Color.Black // Metin rengi
+                ),
+                elevation = ButtonDefaults.elevatedButtonElevation(
+                    defaultElevation = 4.dp, // Normal durumda daha belirgin gölge
+                    pressedElevation = 8.dp // Basılıyken daha belirgin gölge
+                )
+            ) {
+                Text("Ekle", fontSize = 18.sp, style = MaterialTheme.typography.bodyMedium)
             }
-        }) {
-            Text("Ekle", fontSize = 20.sp)
         }
     }
 }
@@ -131,7 +167,7 @@ suspend fun stokGuncellemeVeyaEkleme(
 ) {
     val db = FirebaseFirestore.getInstance()
     val ürünStokCollection = db.collection("Urun_stok")
-    val ürünId = "$ürün_adı+$marka+$model"
+    val ürünId = "$ürün_adı-$marka-$model"
 
     try {
         val docRef = ürünStokCollection.document(ürünId)

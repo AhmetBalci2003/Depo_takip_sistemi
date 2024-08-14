@@ -3,7 +3,7 @@ package com.example.depo_takip_sistemi
 import com.google.firebase.Timestamp
 
 data class Urun_kullanim(
-    var UrunID:String="",
+    var urunID:String="",
     var kul_ad:String="",
     var kul_soyad:String="",
     var kul_dep:String="",
